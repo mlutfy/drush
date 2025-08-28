@@ -417,6 +417,19 @@ function drush_startup($argv) {
     // Make sure Drush can locates original working directory. https://github.com/drush-ops/drush/issues/2285
     chdir($cwd);
 
+    // [ML] SYMBIOTIC Inject "-l example.org" in the arguments
+    $site_root = $cwd;
+    while ($site_root != "/") {
+      if (file_exists("$site_root/settings.php")) {
+        if ($arguments[0] != "-l") {
+          array_unshift($arguments, basename($site_root));
+          array_unshift($arguments, '-l');
+        }
+        break;
+      }
+      $site_root = dirname($site_root);
+    }
+
     // Launch the new script in the same process.
     // If the launch succeeds, then it will not return.
     $error = pcntl_exec($found_script, $arguments, $env);
